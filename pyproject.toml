@@ -1,0 +1,18 @@
+[tool.poetry]
+name = "homework_8"
+version = "0.1.0"
+description = ""
+authors = ["TosLICK <anatosliy@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.12"
+pymongo = {extras = ["srv", "tls"], version = "^4.7.3"}
+mongoengine = "^0.28.2"
+redis = "^5.0.6"
+redis-lru = "^0.1.2"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
