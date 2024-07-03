@@ -19,3 +19,9 @@ class Quote(Document):
         data = self.to_mongo(*args, **kwargs)
         data['author'] = self.author.fullname
         return json_util.dumps(data, ensure_ascii=False)
+    
+class Contact(Document):
+    fullname = StringField(max_length=50)
+    email = StringField(max_length=50)
+    received_message = False
+    meta = {'collection': 'contacts'}

@@ -20,9 +20,10 @@ def usage():
 @cache
 def find_by_tag(tag: str) -> list[str |  None]:
     quotes = Quote.objects(tags__iregex=tag)
-    # quotes = Quote.objects(tags=tag)
+    # quotes = Quote.objects()
     # quotes = Quote.objects().all()
-    result = [q.quote for q in quotes]
+    result = tuple([q.quote for q in quotes])
+    # result = tuple([q.quote for q in quotes if tag in q.tags])
     return result
     # result
     # quotes = Quote.objects(tags__icontains=tag)
