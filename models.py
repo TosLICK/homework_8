@@ -23,7 +23,7 @@ class Quote(Document):
 class Contact(Document):
     fullname = StringField(max_length=50)
     email = StringField(max_length=50)
-    phone = StringField(max_length=20)
+    phone = StringField(max_length=50)
     prefered_channel = StringField(max_length=10, choices=['email', 'sms'])
-    received_message = BooleanField(default=False)
+    sent_message = BooleanField(default=False)
     meta = {'collection': 'contacts'}

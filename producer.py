@@ -1,8 +1,5 @@
 import pika
-import json
-import pickle
 
-# from datetime import datetime
 from random import randint
 from faker import Faker
 
@@ -16,68 +13,42 @@ connection = pika.BlockingConnection(
 channel = connection.channel()
 
 channel.exchange_declare(exchange='task_mock', exchange_type='direct')
-# channel.queue_declare(queue='email_queue', durable=True)
-# channel.queue_declare(queue='sms_queue', durable=True)
-channel.queue_declare(queue='task_queue', durable=True)
-channel.queue_bind(exchange='task_mock', queue='task_queue')
+channel.queue_declare(queue='email_queue', durable=True)
+channel.queue_declare(queue='sms_queue', durable=True)
+channel.queue_bind(exchange='task_mock', queue='email_queue', routing_key='email')
+channel.queue_bind(exchange='task_mock', queue='sms_queue', routing_key='sms')
 
 
 def main():
-    for i in range(4):
-    #         message = {
-    #         "id": i + 1,
-    #         "payload": f"Task #{i + 1}",
-    #         "date": datetime.now().isoformat()
-    #     }
+    contact_num = randint(4, 6)
+    for i in range(contact_num):
         contact = Contact(
             fullname=Faker().name(),
             email=Faker().email(),
             phone=Faker().phone_number(),
             prefered_channel=Faker().random_element(['email', 'sms']),
-            received_message=False
+            sent_message=False
         ).save()
 
-        # message = {
-            # "id": contact.id
-            # "fullname": contact.fullname,
-            # "email": contact.email,
-            # "phone": contact.phone,
-            # "received_message": contact.received_message,
-            # "date": datetime.now().isoformat()
-        # }
         message = str(contact.id)
 
         if contact.prefered_channel == 'email':
             channel.basic_publish(
                 exchange='task_mock',
-                routing_key='task_queue',
-                # routing_key='email_queue',
+                routing_key='email',
                 body=message.encode(),
-                # body=json.dumps(message).encode(),
-                # body=pickle.dumps(message),
                 properties=pika.BasicProperties(
                     delivery_mode=pika.spec.PERSISTENT_DELIVERY_MODE
                 ))
         elif contact.prefered_channel == 'sms': 
             channel.basic_publish(
                 exchange='task_mock',
-                routing_key='task_queue',
-                # routing_key='sms_queue',
+                routing_key='sms',
                 body=message.encode(),
-                # body=json.dumps(message).encode(),
-                # body=pickle.dumps(message),
                 properties=pika.BasicProperties(
                     delivery_mode=pika.spec.PERSISTENT_DELIVERY_MODE
                 ))
-        # channel.basic_publish(
-        #     exchange='task_mock',
-        #     routing_key='task_queue',
-        #     body=message.encode(),
-        #     # body=json.dumps(message).encode(),
-        #     # body=pickle.dumps(message),
-        #     properties=pika.BasicProperties(
-        #         delivery_mode=pika.spec.PERSISTENT_DELIVERY_MODE
-        #     ))
+
         print(" [x] Sent %r" % message)
     connection.close()
     
