@@ -23,7 +23,7 @@ channel.queue_bind(exchange='task_mock', queue='task_queue')
 
 
 def main():
-    for i in range(2):
+    for i in range(4):
     #         message = {
     #         "id": i + 1,
     #         "payload": f"Task #{i + 1}",
