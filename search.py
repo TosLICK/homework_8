@@ -9,25 +9,27 @@ client = redis.StrictRedis(host='', port=6379, password=None)
 cache = RedisLRU(client)
 
 
-def parse_input(user_input):
-    cmd, *args = user_input.split(':')
-    cmd = cmd.strip().lower()
-    return cmd, *args
+def parse_input(user_input: str) -> tuple[str, list]:
+    if ':' not in user_input:
+        cmd = user_input.strip().lower()
+        return cmd, []
+    cmd = user_input[:user_input.index(':')].strip().lower()
+    args = user_input[user_input.index(':') + 1:].lower().split(',')
+    args = [arg.strip() for arg in args]
+    return cmd, args
 
 def usage():
-    return "Usage: 'name: <author_name>'\n'tag: <tag_name>'\n'tags: <tag_name>, <tag_name>'\n'exit'\n'close'"
+    return "Usage:\n'name: <author_name>'\n'tag: <tag_name>'\n'tags: <tag_name>, <tag_name>'\n'exit'\n'close'"
 
 @cache
-def find_by_tag(tag: str) -> list[str |  None]:
-    quotes = Quote.objects(tags__iregex=tag)
-    # quotes = Quote.objects()
-    # quotes = Quote.objects().all()
-    result = tuple([q.quote for q in quotes])
-    # result = tuple([q.quote for q in quotes if tag in q.tags])
+def find_by_tags(tags: list) -> tuple[str | None]:
+    quotes = []
+    for tag in tags:
+        quotes.extend(Quote.objects(tags__iregex=tag))
+    # quotes = Quote.objects(__raw__={"tags": {"$in": tags }})
+    quotes = set(quotes)
+    result = tuple([q.quote.encode('utf-8') for q in quotes])
     return result
-    # result
-    # quotes = Quote.objects(tags__icontains=tag)
-    # print([q.to_json() for q in quotes])
 
 @cache
 def find_by_author(author: str) -> dict:
@@ -35,26 +37,27 @@ def find_by_author(author: str) -> dict:
     result = {}
     for a in authors:
         quotes = Quote.objects(author=a)
-        result[a.fullname] = [q.quote for q in quotes]
+        result[a.fullname] = [q.quote.encode('utf-8') for q in quotes]
     return result
 
 def main():
     while True:
         user_input = input("Enter a command and a value separeted by a colon: ")
         try:
-            command, *args = parse_input(user_input)
+            command, args = parse_input(user_input)
 
             match command:
                 case 'close' | 'exit':
                     break
                 case 'name':
+                    args = args[0]
                     print(find_by_author(args))
                 case 'tag' | 'tags':
-                    print(find_by_tag(args))
+                    print(find_by_tags(args))
                 case _:
                     print(usage())
         except ValueError:
-            print('ValueError') # usage()
+            print('ValueError')
         except IndexError:
             print('IndexError')
         except KeyError:
@@ -63,5 +66,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-    # quotes = Quote.objects().all()
-    # print([e.to_json() for e in quotes])

@@ -1,5 +1,5 @@
 from bson import json_util
-from mongoengine import Document, StringField, ReferenceField, ListField, CASCADE
+from mongoengine import Document, StringField, ReferenceField, ListField, BooleanField, CASCADE
 
 
 class Author(Document):
@@ -23,5 +23,7 @@ class Quote(Document):
 class Contact(Document):
     fullname = StringField(max_length=50)
     email = StringField(max_length=50)
-    received_message = False
+    phone = StringField(max_length=20)
+    prefered_channel = StringField(max_length=10, choices=['email', 'sms'])
+    received_message = BooleanField(default=False)
     meta = {'collection': 'contacts'}
